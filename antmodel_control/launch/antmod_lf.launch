@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Convention for comments in this .launch-file
+       If comments begins with ... than
+       Launch ...                  = another .launch-file is included equivalent to [roslaun pkg .launch-file]
+       Run ...                     = a node is run equivalent to [rosrun pkg node]
+       Load ...                    = a parameter is loaded from parameter server
+  -->
+  
+  <!-- Launch joint controllers -->
+  <include file="$(find antmodel_control)/launch/antmodel_control_lf.launch" />
+
+  <!-- Run node to "fork" output verctor q [1xN] of inverse kinematic to single joints -->
+  <node name="antleg_ikin2sjoint" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_lf_position_controller/command/" />
+    <remap from="/robot_joint2/command" to="/antmodel/joint2_lf_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lf_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lf_position_controller/command/" />
+  </node>
+
+</launch>

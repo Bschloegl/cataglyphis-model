@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Launch joint controllers -->
+  <include file="$(find antmodel_control)/launch/antmodel_control.launch" />
+
+
+<node name="walkfront" pkg="antmodel_control" type="walkrear" output="screen">
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_lf_position_controller/command/" />
+  <remap from="/robot_joint2/command" to="/antmodel/joint2_lf_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lf_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lf_position_controller/command/" /> 
+
+   <remap from="/robot_joint1_delayed/command" to="/antmodel/joint1_rf_position_controller/command/" />
+    <remap from="/robot_joint2_delayed/command" to="/antmodel/joint2_rf_position_controller/command_right/" />
+  <remap from="/robot_joint3_delayed/command" to="/antmodel/joint3_rf_position_controller/command/" />
+  <remap from="/robot_joint4_delayed/command" to="/antmodel/joint4_rf_position_controller/command/" />
+</node>
+
+<node name="walkmiddle" pkg="antmodel_control" type="walkrear" output="screen">
+
+    <remap from="/robot_joint1_delayed/command" to="/antmodel/joint1_lm_position_controller/command/" />
+  <remap from="/robot_joint2_delayed/command" to="/antmodel/joint2_lm_position_controller/command/" />
+    <remap from="/robot_joint3_delayed/command" to="/antmodel/joint3_lm_position_controller/command/" />
+    <remap from="/robot_joint4_delayed/command" to="/antmodel/joint4_lm_position_controller/command/" /> 
+
+   <remap from="/robot_joint1/command" to="/antmodel/joint1_rm_position_controller/command/" />
+    <remap from="/robot_joint2/command" to="/antmodel/joint2_rm_position_controller/command_right/" />
+  <remap from="/robot_joint3/command" to="/antmodel/joint3_rm_position_controller/command/" />
+  <remap from="/robot_joint4/command" to="/antmodel/joint4_rm_position_controller/command/" />
+
+</node>
+
+<node name="walkrear" pkg="antmodel_control" type="walkrear" output="screen">
+      <remap from="/robot_joint1/command" to="/antmodel/joint1_lr_position_controller/command/" />
+  <remap from="/robot_joint2/command" to="/antmodel/joint2_lr_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lr_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lr_position_controller/command/" /> 
+
+  <remap from="/robot_joint1_delayed/command" to="/antmodel/joint1_rr_position_controller/command/" />
+    <remap from="/robot_joint2_delayed/command" to="/antmodel/joint2_rr_position_controller/command_right/" />
+  <remap from="/robot_joint3_delayed/command" to="/antmodel/joint3_rr_position_controller/command/" />
+  <remap from="/robot_joint4_delayed/command" to="/antmodel/joint4_rr_position_controller/command/" />
+</node>
+
+  <node name="joint2_left_to_right" pkg="antmodel_control" type="joint2_left_to_right"/>
+ 
+</launch>

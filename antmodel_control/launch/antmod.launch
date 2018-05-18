@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Convention for comments in this .launch-file
+       If comments begins with ... than
+       Launch ...                  = another .launch-file is included equivalent to [roslaun pkg .launch-file]
+       Run ...                     = a node is run equivalent to [rosrun pkg node]
+       Load ...                    = a parameter is loaded from parameter server
+  -->
+  
+  <!-- Launch joint controllers -->
+  <include file="$(find antmodel_control)/launch/antmodel_control.launch" />
+
+  <!-- Run node to "fork" output verctor q [1xN] of inverse kinematic to single joints -->
+  <node name="antleg_ikin2sjointlf" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_lf_position_controller/command/" />
+  <remap from="/robot_joint2/command" to="/antmodel/joint2_lf_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lf_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lf_position_controller/command/" /> 
+  </node>
+
+  <node name="antleg_ikin2sjointlm" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_lm_position_controller/command/" />
+  <remap from="/robot_joint2/command" to="/antmodel/joint2_lm_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lm_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lm_position_controller/command/" /> 
+  </node>
+
+  <node name="antleg_ikin2sjointlr" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_lr_position_controller/command/" />
+  <remap from="/robot_joint2/command" to="/antmodel/joint2_lr_position_controller/command/" />
+    <remap from="/robot_joint3/command" to="/antmodel/joint3_lr_position_controller/command/" />
+    <remap from="/robot_joint4/command" to="/antmodel/joint4_lr_position_controller/command/" /> 
+  </node>
+
+  <node name="antleg_ikin2sjointrf" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_rf_position_controller/command/" />
+    <remap from="/robot_joint2/command" to="/antmodel/joint2_rf_position_controller/command_right/" />
+  <remap from="/robot_joint3/command" to="/antmodel/joint3_rf_position_controller/command/" />
+  <remap from="/robot_joint4/command" to="/antmodel/joint4_rf_position_controller/command/" />
+  </node>
+
+  <node name="antleg_ikin2sjointrm" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_rm_position_controller/command/" />
+    <remap from="/robot_joint2/command" to="/antmodel/joint2_rm_position_controller/command_right/" />
+  <remap from="/robot_joint3/command" to="/antmodel/joint3_rm_position_controller/command/" />
+  <remap from="/robot_joint4/command" to="/antmodel/joint4_rm_position_controller/command/" />
+  </node>
+
+  <node name="antleg_ikin2sjointrr" pkg="antleg_matlab" type="antleg_matlab" >
+    <remap from="/robot_joint1/command" to="/antmodel/joint1_rr_position_controller/command/" />
+    <remap from="/robot_joint2/command" to="/antmodel/joint2_rr_position_controller/command_right/" />
+  <remap from="/robot_joint3/command" to="/antmodel/joint3_rr_position_controller/command/" />
+  <remap from="/robot_joint4/command" to="/antmodel/joint4_rr_position_controller/command/" />
+  </node>
+
+  <node name="joint2_left_to_right" pkg="antmodel_control" type="joint2_left_to_right">
+</node>  
+
+</launch>

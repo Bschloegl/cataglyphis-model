@@ -1,0 +1,585 @@
+<?xml version="1.0"?>
+<!-- Synthesis of an Ant Hexapod -->
+<robot name="antmodel" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+
+  <xacro:property name="body_mass" value="1" /> <!-- mean value about 10 mg -->
+  <xacro:property name="leg_mass"  value="2" /> <!-- guessed value for one leg -> distributed evenly between femur & tibia -->
+  <xacro:property name="mass"      value="1" /> <!-- dummy value for joints -->
+<xacro:property name="coxa_mass"      value="1" /> <!-- coxa, DOF1 und DOF2 alle coxa_mass >> dritteln -->
+<xacro:property name="femur_mass"      value="1" /> <!-- dummy value for joints -->
+<xacro:property name="tibia_mass"      value="1" /> <!-- dummy value for joints -->
+<xacro:property name="tarsus_mass"      value="1" /> <!-- dummy value for joints -->
+<xacro:property name="base_mass"      value="1" /> <!-- dummy value for joints -->
+
+
+  <xacro:property name="width" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="width1" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="height1" value="0.1" /> <!-- Link 1 -->
+  <xacro:property name="height2" value="0.1" /> <!-- Link 2 -->
+  <xacro:property name="height3" value="0.1" /> <!-- Link 3 -->
+  
+  <!-- Base transformation parameters -->
+  <xacro:property name="AZ" value="6" /> <!-- -1*min(PZ(:,5)) 4.0127-->
+  <xacro:property name="baseX" value="2.5329" /> <!-- link{1,2}(10,1) -->
+  <xacro:property name="baseY" value="0.7012" /> <!-- link{1,2}(10,2) -->
+  <xacro:property name="baseZ" value="-0.1418" /> <!-- link{1,2}(10,3) -->
+  <xacro:property name="baseLf" value="2.4583" /> <!-- norm(links{1,2}(10,:)) --> <!-- Alessandro front: 2.632-->
+  <xacro:property name="baseLm" value="1.5195" /> <!-- norm(links{1,2}(10,:)) -->
+  <xacro:property name="baseLr" value="0.9946" /> <!-- norm(links{1,2}(10,:)) -->
+
+ 	<!-- front leg -->
+  <xacro:property name="ARF" value="-2.0429" /> <!-- base_rotation --> <!-- Roll Pitch Yaw-->
+  <xacro:property name="APF" value="0.3039" /> 
+  <xacro:property name="AYF" value="2.9809" /> 
+ 	<!-- middle leg -->
+  <xacro:property name="ARM" value="-0.6310" /> 
+  <xacro:property name="APM" value="0.2147" /> 
+  <xacro:property name="AYM" value="-2.3994" /> 
+ 	<!-- rear leg -->
+  <xacro:property name="ARR" value="-2.9311" /> 
+  <xacro:property name="APR" value="0.6044" />
+  <xacro:property name="AYR" value="1.6731" />    
+
+  <!-- Antleg Parameter --> 	<!-- front leg -->
+  <xacro:property name="femur_lenF" value="2.6999"/> <!-- length of femur segment stats{2,2}(1,3)-->
+  <xacro:property name="femur_radF" value="0.1"/> <!-- radius of femur segment -->
+  <xacro:property name="tibia_lenF" value="4.2717"/> <!-- length of tibia + tarsus segment stats{2,2}(1,4)-->
+  <xacro:property name="tibia_radF" value="0.04"/> <!-- length of tibia + tarsus segment  <origin xyz="${baseX} ${baseY} ${baseZ}"/> -->
+  
+  <!-- Antleg Parameter --> 	<!-- middle leg -->
+  <xacro:property name="femur_lenM" value="2.9503"/> <!-- length of femur segment stats{2,2}(1,3)-->
+  <xacro:property name="femur_radM" value="0.1"/> <!-- radius of femur segment -->
+  <xacro:property name="tibia_lenM" value="5.1827"/> <!-- length of tibia + tarsus segment stats{2,2}(1,4)-->
+  <xacro:property name="tibia_radM" value="0.04"/> <!-- length of tibia + tarsus segment  <origin xyz="${baseX} ${baseY} ${baseZ}"/> -->
+  
+  <!-- Antleg Parameter --> 	<!-- rear leg -->
+  <xacro:property name="femur_lenR" value="3.7715"/> <!-- length of femur segment stats{2,2}(1,3)-->
+  <xacro:property name="femur_radR" value="0.1"/> <!-- radius of femur segment -->
+  <xacro:property name="tibia_lenR" value="6.8218"/> <!-- length of tibia + tarsus segment stats{2,2}(1,4)-->
+  <xacro:property name="tibia_radR" value="0.04"/> <!-- length of tibia + tarsus segment  <origin xyz="${baseX} ${baseY} ${baseZ}"/> -->
+  
+  <!-- Body Parameters -->
+  <xacro:property name="body_height" value="0.7" /> <!-- Height of body rectangle -->
+  <xacro:property name="body_length" value="1" /> <!-- Length of body rectangle  -->
+  <xacro:property name="body_width" value="0.7" /> <!-- Width of body rectangle  -->
+
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find antmodel_description)/urdf/antmodel.gazebo" />
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find antmodel_description)/urdf/materials.xacro" />
+
+  <!-- Macro for calculating inertia of cylinder -->
+  <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertia  ixx="${m*(3*r*r+h*h)/12.0}" ixy = "0" ixz = "0"
+              iyy="${m*(3*r*r+h*h)/12.0}" iyz = "0"
+              izz="${m*r*r/2}" /> 
+</xacro:macro>
+
+  <!-- Macro for calculating inertia of box -->
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertia  ixx="${m *0.08333 * (y*y + z*z)}" ixy="0.0" ixz="0.0"
+	      iyy="${m *0.08333 * (x*x + z*z)}" iyz="0.0"
+	      izz="${m *0.08333 * (x*x + y*y)}" /> 
+</xacro:macro>
+
+  <!-- Macro for calculating inertia of sphere -->
+<macro name="sphere_inertia" params="m r">
+<inertia  ixx="${2*m*r*r/5}" ixy = "0" ixz = "0"
+  iyy="${2*m*r*r/5}" iyz = "0"
+  izz="${2*m*r*r/5}"
+/>
+</macro>
+
+
+<!-- to fix body-->
+<link name="world" />
+<joint name="world_joint"  type="fixed">
+    <origin xyz="0 0 ${AZ/2}" rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="body"/>
+</joint>
+
+
+<link name="body">
+    <visual>
+      <origin xyz="0 0 ${AZ/2}" rpy="0 0 0"/>
+      <geometry>
+	<box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+    </visual>
+    
+  
+<collision>
+      <origin xyz="0 0 ${AZ/2}" rpy="0 0 0"/>
+      <geometry>
+	<box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+    </collision>
+
+
+
+    <inertial>
+      <origin xyz="0 0 ${AZ/2}" rpy="0 0 0"/>
+      <mass value="${body_mass}"/>
+
+    <box_inertia m="${body_mass}" x="${body_length}" y="${body_width}" z="${body_height}"/>
+    </inertial>
+
+
+  </link>
+  
+
+  
+ 
+<!-- Leg Macro -->
+<xacro:macro name="leg" params="suffix xyz rpy baseL femur_len femur_rad tibia_len tibia_rad">
+
+ <!-- Base -->
+  <link name="base_${suffix}">
+
+
+    <visual>
+      <origin xyz="${baseL/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${baseL} ${width} ${width}"/>
+      </geometry>
+    </visual>
+<!--
+	<collision>
+      <origin xyz="${baseL/2} 0 0"  rpy="0 0 0"/>
+      <geometry>
+	<box size="${baseL} ${width} ${width}"/>
+      </geometry>
+    </collision>
+<inertial>
+      <origin xyz="${baseL/2} 0 0" rpy="0 0 0"/>
+      <mass value="${base_mass}"/>
+
+    <box_inertia m="${base_mass}" x="${baseL}" y="${width}" z="${width}"/>
+    </inertial>
+
+-->
+
+  </link>
+
+<!-- Coxa Link -->
+  <link name="coxa_${suffix}">
+    
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height1}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+<collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height1}"/>
+      </geometry>
+    </collision>
+
+       <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${coxa_mass}"/> 
+	<box_inertia m="${coxa_mass}" x="${width1}" y="${width1}" z="${width1}"/>
+    </inertial>
+
+  </link>
+  
+    <!-- Link DOF1 -->
+  <link name="link1_${suffix}">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height2}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height2}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+      <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+         <mass value="${coxa_mass}"/> 
+	  <box_inertia m="${coxa_mass}" x="${width1}" y="${width1}" z="${width1}"/>
+    </inertial>
+  </link>
+  
+    <!-- Link DOF2 -->
+  <link name="link2_${suffix}">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height3}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${width} ${width} ${height3}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${coxa_mass}"/>
+	<box_inertia m="${coxa_mass}" x="${width1}" y="${width1}" z="${width1}"/>
+    </inertial>
+  </link>
+ 
+  <!-- Femur Link -->
+  <link name="femur_${suffix}">
+    <collision>
+      <origin xyz="${femur_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${femur_len}" radius="${femur_rad}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${femur_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${femur_len}" radius="${femur_rad}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+   <inertial>
+      <origin xyz="${femur_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <mass value="${femur_mass}"/>
+    <cylinder_inertia m="${femur_mass}" r="${femur_rad}" h="${femur_len}"/>
+</inertial>
+  </link>
+
+  <!-- Tibia Link -->
+  <link name="tibia_${suffix}">
+    <collision>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${tibia_len}" radius="${tibia_rad}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${tibia_len}" radius="${tibia_rad}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <mass value="${tibia_mass}"/>
+    <cylinder_inertia m="${tibia_mass}" r="${tibia_rad}" h="${tibia_len}"/>
+</inertial>
+
+<mu>1</mu>
+<mu2>1</mu2>
+  </link>
+
+<!-- Foot -->
+<link name="tarsus_${suffix}">
+<collision>
+<origin xyz="${2*tibia_rad} 0 0" rpy="0 0 0"/>
+<geometry>
+          
+          <sphere radius="${2*tibia_rad}" />
+        </geometry>
+<surface>
+            <friction>
+              <ode>
+                <mu>0.7</mu>
+                <mu2>0.7</mu2>
+              </ode>
+            </friction>
+          </surface>
+</collision>
+<visual>
+<origin xyz="${2*tibia_rad} 0 0" rpy="0 0 0"/>
+<geometry>
+          <sphere radius="${2*tibia_rad}" />
+        </geometry>
+</visual>
+    <inertial>
+      <origin xyz="${2*tibia_rad} 0 0" rpy="0 0 0"/>
+      <mass value="${tarsus_mass}"/>
+    <sphere_inertia m="${tarsus_mass}" r="${2*tibia_rad}" />
+</inertial>
+
+<mu>1</mu>
+<mu2>1</mu2>
+</link> 
+ <!--
+  <link name="tarsus_${suffix}">
+    <collision>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${tibia_len}" radius="${tibia_rad}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<cylinder length="${tibia_len}" radius="${tibia_rad}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="${tibia_len/2} 0 0" rpy="0 ${PI/2} 0"/>
+      <mass value="${tarsus_mass / 2}"/>
+    <cylinder_inertia m="${tarsus_mass/2}" r="${tibia_rad}" h="${tibia_len}"/>
+</inertial>
+
+<mu>1</mu>
+<mu2>1</mu2>
+  </link> 
+-->
+
+<joint name="j_body_${suffix}" type="fixed">
+        <parent link="body"/>
+        <child link="base_${suffix}"/>
+	<origin xyz="${xyz}" rpy="${rpy}" />
+</joint>
+
+ <!--
+<joint name="j_body_${suffix}" type="continuous">
+        <parent link="body"/>
+        <child link="base_${suffix}"/>
+	<origin xyz="${xyz}" rpy="${rpy}" />
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+
+-->
+  <!-- Frame {A} -->
+  <joint name="A_${suffix}" type="fixed">
+    <parent link="base_${suffix}"/>
+    <child link="coxa_${suffix}"/>
+    <origin xyz="${baseL} 0 0"/>
+  </joint>
+
+
+ <!-- Frame A continuous
+<joint name="A_${suffix}" type="continuous">
+    <parent link="base_${suffix}"/>
+    <child link="coxa_${suffix}"/>
+    <origin xyz="${baseL} 0 0"/>
+ <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+ -->
+
+  <!-- DOF1 = q1 -->
+  <joint name="joint1_${suffix}" type="continuous">
+    <parent link="coxa_${suffix}"/>
+    <child link="link1_${suffix}"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+
+  <!-- DOF2 = q2 -->
+  <joint name="joint2_${suffix}" type="continuous">
+    <parent link="link1_${suffix}"/>
+    <child link="link2_${suffix}"/>
+    <origin xyz="0 0 0" rpy="${-PI/2} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+
+  <!-- DOF3 = q3 -->
+  <joint name="joint3_${suffix}" type="continuous">
+    <parent link="link2_${suffix}"/>
+    <child link="femur_${suffix}"/>
+    <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+
+
+  <!-- DOF4 = q4 -->
+  <joint name="joint4_${suffix}" type="continuous">
+    <parent link="femur_${suffix}"/>
+    <child link="tibia_${suffix}"/>
+    <origin xyz="${femur_len} 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+  </joint>
+
+<!--Foot  continuous-->
+<joint name="tarsusjoint_${suffix}" type="continuous">
+  <parent link="tibia_${suffix}"/>
+  <child link="tarsus_${suffix}"/>
+  <origin xyz="${tibia_len} 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1"/>
+</joint>
+
+
+<!--Foot  fixed
+<joint name="tarsusjoint_${suffix}" type="fixed">
+  <parent link="tibia_${suffix}"/>
+  <child link="tarsus_${suffix}"/>
+  <origin xyz="${tibia_len} 0 0" rpy="0 0 0"/>
+</joint>
+-->
+<!-- Force torque senors in all joints publishing on topics-->
+<gazebo reference="joint1_${suffix}">
+<provideFeedback>true</provideFeedback>
+</gazebo>
+<!-- The ft_sensor plugin -->
+<gazebo>
+<plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+<updateRate>100.0</updateRate>
+<topicName>ft_sensor_joint1_${suffix}</topicName>
+<jointName>joint1_${suffix}</jointName>
+</plugin>
+</gazebo>
+
+<gazebo reference="joint2_${suffix}">
+<provideFeedback>true</provideFeedback>
+</gazebo>
+<!-- The ft_sensor plugin -->
+<gazebo>
+<plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+<updateRate>100.0</updateRate>
+<topicName>ft_sensor_joint2_${suffix}</topicName>
+<jointName>joint2_${suffix}</jointName>
+</plugin>
+</gazebo>
+
+<gazebo reference="joint3_${suffix}">
+<provideFeedback>true</provideFeedback>
+</gazebo>
+<!-- The ft_sensor plugin -->
+<gazebo>
+<plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+<updateRate>100.0</updateRate>
+<topicName>ft_sensor_joint3_${suffix}</topicName>
+<jointName>joint3_${suffix}</jointName>
+</plugin>
+</gazebo>
+
+<gazebo reference="joint4_${suffix}">
+<provideFeedback>true</provideFeedback>
+</gazebo>
+<!-- The ft_sensor plugin -->
+<gazebo>
+<plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+<updateRate>100.0</updateRate>
+<topicName>ft_sensor_joint4_${suffix}</topicName>
+<jointName>joint4_${suffix}</jointName>
+</plugin>
+</gazebo>
+
+<gazebo reference="tarsusjoint_${suffix}">
+<provideFeedback>true</provideFeedback>
+</gazebo>
+<!-- The ft_sensor plugin -->
+<gazebo>
+<plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+<updateRate>100.0</updateRate>
+<topicName>ft_sensor_tarsusjoint_${suffix}</topicName>
+<jointName>tarsusjoint_${suffix}</jointName>
+</plugin>
+</gazebo>
+
+  <gazebo reference="coxa_${suffix}">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+   <gazebo reference="femur_${suffix}">
+    <material>Gazebo/Green</material>
+  </gazebo>
+   <gazebo reference="link1_${suffix}">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+   <gazebo reference="link2_${suffix}">
+    <material>Gazebo/Red</material>
+  </gazebo>
+  <gazebo reference="body">
+   <material>Gazebo/GreyTransparent</material>
+  </gazebo>
+  <gazebo reference="base_${suffix}">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+
+
+  <!-- Transmission to ROS -->
+  <transmission name="tran1_${suffix}">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2_${suffix}">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran3_${suffix}">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint3_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="tran4_${suffix}">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint4_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4_${suffix}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface> 
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+
+</xacro:macro>
+
+<xacro:leg suffix="lf" xyz="0 0 ${AZ/2}" rpy="${ARF} ${APF} ${AYF}" baseL = "${baseLf}" femur_len ="${femur_lenF}" femur_rad="${femur_radF}" tibia_len ="${tibia_lenF}" tibia_rad="${tibia_radF}" />
+<xacro:leg suffix="lm" xyz="0 0 ${AZ/2}" rpy="${ARM} ${APM} ${AYM}" baseL = "${baseLm}" femur_len ="${femur_lenM}" femur_rad="${femur_radM}" tibia_len ="${tibia_lenM}" tibia_rad="${tibia_radM}"/>
+<xacro:leg suffix="lr" xyz="0 0 ${AZ/2}" rpy="${ARR} ${APR} ${AYR}" baseL = "${baseLr}" femur_len ="${femur_lenR}" femur_rad="${femur_radR}" tibia_len ="${tibia_lenR}" tibia_rad="${tibia_radR}"/>
+
+
+<xacro:leg suffix="rf" xyz="0 0 ${AZ/2}" rpy="${PI-ARF} ${APF} ${-AYF}" baseL = "${baseLf}" femur_len ="${femur_lenF}" femur_rad="${femur_radF}" tibia_len ="${tibia_lenF}" tibia_rad="${tibia_radF}"/>
+<xacro:leg suffix="rm" xyz="0 0 ${AZ/2}" rpy="${PI-ARM} ${APM} ${-AYM}" baseL = "${baseLm}" femur_len ="${femur_lenM}" femur_rad="${femur_radM}" tibia_len ="${tibia_lenM}" tibia_rad="${tibia_radM}"/>
+<xacro:leg suffix="rr" xyz="0 0 ${AZ/2}" rpy="${PI-ARR} ${APR} ${-AYR}" baseL = "${baseLr}" femur_len ="${femur_lenR}" femur_rad="${femur_radR}" tibia_len ="${tibia_lenR}" tibia_rad="${tibia_radR}"/>
+<!--
+-->
+
+
+</robot>
