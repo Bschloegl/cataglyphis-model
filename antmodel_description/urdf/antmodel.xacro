@@ -292,7 +292,7 @@
 <mu2>1</mu2>
   </link>
 
-<!-- Foot -->
+<!-- Foot  sphere
 <link name="tarsus_${suffix}">
 <collision>
 <origin xyz="${2*tibia_rad} 0 0" rpy="0 0 0"/>
@@ -324,6 +324,35 @@
 <mu>1</mu>
 <mu2>1</mu2>
 </link> 
+-->
+
+<!-- Foot  flat -->
+<link name="tarsus_${suffix}">
+<collision>
+<origin xyz="${2*tibia_rad} 0 0" rpy="0 ${PI/2} 0"/>
+<geometry>
+	<cylinder length="0.0001" radius="${tibia_rad}"/>
+</geometry>
+</collision>
+
+<visual>
+<origin xyz="${2*tibia_rad} 0 0" rpy="0 ${PI/2} 0"/>
+<geometry>
+	<cylinder length="0.0001" radius="${tibia_rad}"/>
+      </geometry>
+      <material name="black"/>
+</visual>
+
+<inertial>
+      <origin  xyz="${2*tibia_rad} 0 0" rpy="0 ${PI/2} 0"/>
+      <mass value="${tibia_mass/5}"/>
+    <cylinder_inertia m="${tibia_mass/5}" r="${tibia_rad}" h="${0.0001}"/>
+</inertial>
+
+<mu>1</mu>
+<mu2>1</mu2>
+</link> 
+
  <!--
   <link name="tarsus_${suffix}">
     <collision>
@@ -423,6 +452,7 @@
     <dynamics damping="1"/>
   </joint>
 
+
 <!--Foot  continuous-->
 <joint name="tarsusjoint_${suffix}" type="continuous">
   <parent link="tibia_${suffix}"/>
@@ -433,6 +463,7 @@
 </joint>
 
 
+
 <!--Foot  fixed
 <joint name="tarsusjoint_${suffix}" type="fixed">
   <parent link="tibia_${suffix}"/>
@@ -440,6 +471,8 @@
   <origin xyz="${tibia_len} 0 0" rpy="0 0 0"/>
 </joint>
 -->
+
+
 <!-- Force torque senors in all joints publishing on topics-->
 <gazebo reference="joint1_${suffix}">
 <provideFeedback>true</provideFeedback>
@@ -518,6 +551,9 @@
   </gazebo>
   <gazebo reference="base_${suffix}">
     <material>Gazebo/Black</material>
+  </gazebo>
+ <gazebo reference="tarsus_${suffix}">
+    <material>Gazebo/Orange</material>
   </gazebo>
 
 
